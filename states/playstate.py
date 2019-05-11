@@ -15,9 +15,12 @@ class PlayState(BaseState):
         self.winner = 1
 
     def enter(self, enter_params=None):
-        self.num_players = enter_params['num_players']
-        self.input_device = enter_params['input_device']
-        self.difficulty = enter_params['difficulty']
+        self.num_players = enter_params.get('num_players')
+        self.input_device = enter_params.get('input_device')
+        self.difficulty = enter_params.get('difficulty')
+        self.is_demo = enter_params.get('is_demo')
+        if self.is_demo is None:
+            self.is_demo = False
 
         # Load Fonts
         load_font('fonts\\font.ttf', 'huge', self.cached_fonts, 128)
@@ -60,18 +63,28 @@ class PlayState(BaseState):
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    statemachine.StateMachine.instance().push('game_menu')
+                    if not self.is_demo:
+                        statemachine.StateMachine.instance().push('game_menu')
+                    else:
+                        statemachine.StateMachine.instance().set_change('main_menu')
 
     def update(self, dt):
-        if self.input_device == 'keyboard':
-            self.on_keypress(dt)
+        if not self.is_demo:
+            # Move player/s with keyboard or mouse
+            if self.input_device == 'keyboard':
+                self.on_keypress(dt)
+            else:
+                self.on_mouse_move()
+
+            # Update player2 if it is a 1 player game
+            if self.num_players == 1:
+                self.player2.update(dt, self.ball)
         else:
-            self.on_mouse_move()
+            self.player1.demo(self.ball)
+            self.player2.demo(self.ball)
 
+        # Update ball movement
         self.ball.update(dt)
-
-        if self.num_players == 1:
-            self.player2.update(dt, self.ball)
 
         # Ball collision with upper bound
         if self.ball.top() <= 0:
@@ -115,39 +128,40 @@ class PlayState(BaseState):
                                 * (self.player2.get_position()[1] + self.player2.height // 2)) / self.ball.get_position()[1]
             self.cached_sounds['paddle_hit'].play()
 
-        # Player 1 scores
-        if self.ball.left() > WINDOW_WIDTH:
-            self.player1.score += 1
-            self.serving_player = 2
-            self.cached_sounds['score'].play()
-            if self.player1.score == WIN_SCORE:
-                self.winner = 1
-                statemachine.StateMachine.instance().set_change('win', {
-                    'winner': self.winner,
-                    'player1_score': self.player1.score,
-                    'player2_score': self.player2.score
-                })
-            else:
-                self.ball.reset()
-                self.ball.set_initial_speed(self.serving_player == 2)
-                pygame.time.wait(500)
+        if not self.is_demo:
+            # Player 1 scores
+            if self.ball.left() > WINDOW_WIDTH:
+                self.player1.score += 1
+                self.serving_player = 2
+                self.cached_sounds['score'].play()
+                if self.player1.score == WIN_SCORE:
+                    self.winner = 1
+                    statemachine.StateMachine.instance().set_change('win', {
+                        'winner': self.winner,
+                        'player1_score': self.player1.score,
+                        'player2_score': self.player2.score
+                    })
+                else:
+                    self.ball.reset()
+                    self.ball.set_initial_speed(self.serving_player == 2)
+                    pygame.time.wait(500)
 
-        # Player 2 scores
-        if self.ball.right() < 0:
-            self.player2.score += 1
-            self.serving_player = 1
-            self.cached_sounds['score'].play()
-            if self.player2.score == WIN_SCORE:
-                self.winner = 2
-                statemachine.StateMachine.instance().set_change('win', {
-                    'winner': self.winner,
-                    'player1_score': self.player1.score,
-                    'player2_score': self.player2.score
-                })
-            else:
-                self.ball.reset()
-                self.ball.set_initial_speed(self.serving_player == 2)
-                pygame.time.wait(500)
+            # Player 2 scores
+            if self.ball.right() < 0:
+                self.player2.score += 1
+                self.serving_player = 1
+                self.cached_sounds['score'].play()
+                if self.player2.score == WIN_SCORE:
+                    self.winner = 2
+                    statemachine.StateMachine.instance().set_change('win', {
+                        'winner': self.winner,
+                        'player1_score': self.player1.score,
+                        'player2_score': self.player2.score
+                    })
+                else:
+                    self.ball.reset()
+                    self.ball.set_initial_speed(self.serving_player == 2)
+                    pygame.time.wait(500)
 
     def render(self, render_screen):
         # draw the net

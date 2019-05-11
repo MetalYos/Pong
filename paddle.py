@@ -49,6 +49,13 @@ class Paddle():
                                             [0] - self.get_position()[0]) / WINDOW_WIDTH)
         self.y = self.y + speed * dt * int(x_speed)
 
+    def demo(self, ball):
+        self.set_position(self.get_position()[0], ball.get_position()[1])
+        if self.y < 0:
+            self.y = 0
+        if self.y > WINDOW_HEIGHT - self.height:
+            self.y = WINDOW_HEIGHT - self.height
+
     def draw(self, screen):
         pygame.draw.rect(screen, (255, 255, 255),
                          pygame.Rect(self.x, self.y,

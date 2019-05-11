@@ -54,7 +54,7 @@ class MainMenuState(BaseState):
         self.menu_items = {
             '1_player': MenuItem((WINDOW_WIDTH * 2 // 5, WINDOW_HEIGHT * 4 // 8), '>> 1 Player', self.cached_fonts['medium']),
             '2_players': MenuItem((WINDOW_WIDTH * 2 // 5, WINDOW_HEIGHT * 5 // 8), '>> 2 Players', self.cached_fonts['medium']),
-            'high_scores': MenuItem((WINDOW_WIDTH * 2 // 5, WINDOW_HEIGHT * 6 // 8), '>> High Scores', self.cached_fonts['medium']),
+            'demo': MenuItem((WINDOW_WIDTH * 2 // 5, WINDOW_HEIGHT * 6 // 8), '>> Demo', self.cached_fonts['medium']),
             'exit': MenuItem((WINDOW_WIDTH * 2 // 5, WINDOW_HEIGHT * 7 // 8), '>> Exit', self.cached_fonts['medium'])
         }
 
@@ -100,8 +100,10 @@ class MainMenuState(BaseState):
                 'num_players': 2,
                 'input_device': 'keyboard'
             })
-        elif name == 'high_scores':
-            print('high_scores')
+        elif name == 'demo':
+            statemachine.StateMachine.instance().set_change('play', {
+                'is_demo': True
+            })
         elif name == 'exit':
             statemachine.StateMachine.instance().exit()
         else:

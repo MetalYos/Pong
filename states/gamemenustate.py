@@ -19,8 +19,7 @@ class GameMenuState(MainMenuState):
 
         self.menu_items = {
             'resume': MenuItem((WINDOW_WIDTH // 3, WINDOW_HEIGHT * 5 // 8), '>> Resume Game', self.cached_fonts['medium']),
-            'high_scores': MenuItem((WINDOW_WIDTH // 3, WINDOW_HEIGHT * 6 // 8), '>> High Scores', self.cached_fonts['medium']),
-            'exit': MenuItem((WINDOW_WIDTH // 3, WINDOW_HEIGHT * 7 // 8), '>> Exit', self.cached_fonts['medium'])
+            'exit': MenuItem((WINDOW_WIDTH // 3, WINDOW_HEIGHT * 6 // 8), '>> Exit', self.cached_fonts['medium'])
         }
 
     def render(self, render_screen):
@@ -32,8 +31,6 @@ class GameMenuState(MainMenuState):
     def menu_item_callback(self, name):
         if name == 'resume':
             statemachine.StateMachine.instance().pop()
-        elif name == 'high_scores':
-            print('high_scores')
         elif name == 'exit':
             statemachine.StateMachine.instance().exit()
         else:
