@@ -166,37 +166,11 @@ class PlayState(BaseState):
         if not self.is_demo:
             # Player 1 scores
             if self.ball.left() > WINDOW_WIDTH:
-                self.player1.score += 1
-                self.serving_player = 2
-                self.cached_sounds['score'].play()
-                if self.player1.score == WIN_SCORE:
-                    self.winner = 1
-                    statemachine.StateMachine.instance().set_change('win', {
-                        'winner': self.winner,
-                        'player1_score': self.player1.score,
-                        'player2_score': self.player2.score
-                    })
-                else:
-                    self.ball.reset()
-                    self.ball.set_initial_speed(self.serving_player == 2)
-                    pygame.time.wait(500)
+                self.player_scores(self.player1)
 
             # Player 2 scores
             if self.ball.right() < 0:
-                self.player2.score += 1
-                self.serving_player = 1
-                self.cached_sounds['score'].play()
-                if self.player2.score == WIN_SCORE:
-                    self.winner = 2
-                    statemachine.StateMachine.instance().set_change('win', {
-                        'winner': self.winner,
-                        'player1_score': self.player1.score,
-                        'player2_score': self.player2.score
-                    })
-                else:
-                    self.ball.reset()
-                    self.ball.set_initial_speed(self.serving_player == 2)
-                    pygame.time.wait(500)
+                self.player_scores(self.player2)
 
     def render(self, render_screen):
         # draw the net
@@ -242,3 +216,26 @@ class PlayState(BaseState):
     def on_mouse_move(self):
         position = pygame.mouse.get_pos()
         self.player1.set_position(self.player1.get_position()[0], position[1])
+
+    def player_scores(self, player):
+        player.score += 1
+
+        if player == self.player1:
+            self.serving_player = 2
+        else:
+            self.serving_player = 1
+        self.cached_sounds['score'].play()
+        if player.score == WIN_SCORE:
+            if player == self.player1:
+                self.winner = 1
+            else:
+                self.winner = 2
+            statemachine.StateMachine.instance().set_change('win', {
+                'winner': self.winner,
+                'player1_score': self.player1.score,
+                'player2_score': self.player2.score
+            })
+        else:
+            self.ball.reset()
+            self.ball.set_initial_speed(self.serving_player == 2)
+            pygame.time.wait(500)
