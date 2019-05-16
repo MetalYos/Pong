@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 import statemachine
 from constants import *
 from states.basestate import BaseState
@@ -102,30 +103,64 @@ class PlayState(BaseState):
 
         # Ball collision with player1
         if self.ball.collides(self.player1):
+            # Add a hit to player1
+            self.player1.ball_hits += 1
+
+            # Set the ball position
             self.ball.set_position(
                 self.player1.width + self.ball.radius + 1, self.ball.get_position()[1])
-            self.ball.dx = -self.ball.dx * 1.03
 
-            if self.ball.get_position()[1] < self.player1.get_position()[1]:
-                self.ball.dy = -(random.randint(BALL_INITIAL_MIN_SPEED, BALL_INITIAL_MAX_SPEED)
-                                 * self.player1.get_position()[1]) / self.ball.get_position()[1]
+            # Calculate the new speed
+            speed = math.sqrt(self.ball.dx ** 2 + self.ball.dy ** 2)
+            if self.difficulty == 'beginner':
+                speed *= PADDLE_SPEED_INCREASE_BEGINNER
+            elif self.difficulty == 'intermediate':
+                speed *= PADDLE_SPEED_INCREASE_INTERMEDIATE
             else:
-                self.ball.dy = (random.randint(BALL_INITIAL_MIN_SPEED, BALL_INITIAL_MAX_SPEED)
-                                * (self.player1.get_position()[1] + self.player1.height // 2)) / self.ball.get_position()[1]
+                speed *= PADDLE_SPEED_INCREASE_EXPERT
+
+            # Calculate new direction
+            direction_y = random.random()
+            if self.ball.get_position()[1] < self.player1.get_position()[1]:
+                direction_y = random.random() * -1.0
+            direction_x = math.sqrt(1 - direction_y ** 2)
+
+            # Calculate the new velocity
+            self.ball.dx = direction_x * speed
+            self.ball.dy = direction_y * speed
+
+            # Play the paddle hit sound
             self.cached_sounds['paddle_hit'].play()
 
         # Ball collision with player2
         if self.ball.collides(self.player2):
+            # Add a hit to player2
+            self.player2.ball_hits += 1
+
+            # Set the ball position
             self.ball.set_position(
                 WINDOW_WIDTH - self.player2.width - self.ball.radius - 1, self.ball.get_position()[1])
-            self.ball.dx = -self.ball.dx * 1.03
 
-            if self.ball.get_position()[1] - self.ball.radius < self.player2.get_position()[1]:
-                self.ball.dy = -(random.randint(BALL_INITIAL_MIN_SPEED, BALL_INITIAL_MAX_SPEED)
-                                 * self.player2.get_position()[1]) / self.ball.get_position()[1]
+            # Calculate the new speed
+            speed = math.sqrt(self.ball.dx ** 2 + self.ball.dy ** 2)
+            if self.difficulty == 'beginner':
+                speed *= PADDLE_SPEED_INCREASE_BEGINNER
+            elif self.difficulty == 'intermediate':
+                speed *= PADDLE_SPEED_INCREASE_INTERMEDIATE
             else:
-                self.ball.dy = (random.randint(BALL_INITIAL_MIN_SPEED, BALL_INITIAL_MAX_SPEED)
-                                * (self.player2.get_position()[1] + self.player2.height // 2)) / self.ball.get_position()[1]
+                speed *= PADDLE_SPEED_INCREASE_EXPERT
+
+            # Calculate new direction
+            direction_y = random.random()
+            if self.ball.get_position()[1] < self.player2.get_position()[1]:
+                direction_y = random.random() * -1.0
+            direction_x = -math.sqrt(1 - direction_y ** 2)
+
+            # Calculate the new velocity
+            self.ball.dx = direction_x * speed
+            self.ball.dy = direction_y * speed
+
+            # Play the paddle hit sound
             self.cached_sounds['paddle_hit'].play()
 
         if not self.is_demo:

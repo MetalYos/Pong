@@ -11,6 +11,7 @@ class Paddle():
         self.width = width
         self.height = height
         self.score = 0
+        self.ball_hits = 0
 
         self.speed = PADDLE_SPEED
         self.tolerance = 0
