@@ -1,6 +1,7 @@
 import pygame
 import random
-from constants import WINDOW_HEIGHT, WINDOW_WIDTH, PADDLE_SPEED
+from constants import WINDOW_HEIGHT, WINDOW_WIDTH, PADDLE_SPEED, PADDLE_SPECIAL_HIT_THRESHOLD
+from powermeter import PowerMeter
 import math
 
 
@@ -12,9 +13,18 @@ class Paddle():
         self.height = height
         self.score = 0
         self.ball_hits = 0
+        self.going_to_hit_special = False
+        self.hit_special = False
 
         self.speed = PADDLE_SPEED
         self.tolerance = 0
+
+        self.power_meter = PowerMeter(0, 0, self.x < WINDOW_WIDTH // 2)
+        self.power_meter.y = WINDOW_HEIGHT - self.power_meter.height - WINDOW_HEIGHT // 20
+        self.power_meter.x = WINDOW_WIDTH // 2 - \
+            self.power_meter.width - WINDOW_WIDTH // 20
+        if self.x > WINDOW_WIDTH // 2:
+            self.power_meter.x = WINDOW_WIDTH // 2 + WINDOW_WIDTH // 20
 
     def set_position(self, x, y):
         self.x = x - self.width // 2
@@ -38,6 +48,15 @@ class Paddle():
     def set_tolerance(self, tolerance):
         self.tolerance = tolerance
 
+    def add_ball_hit(self):
+        self.ball_hits += 1
+        self.power_meter.percentage = 100 * \
+            (self.ball_hits / PADDLE_SPECIAL_HIT_THRESHOLD)
+
+    def reset_ball_hits(self):
+        self.ball_hits = 0
+        self.power_meter.percentage = 0
+
     def move(self, move_up, dt):
         if move_up:
             self.y = max(0, self.y - self.speed * dt)
@@ -58,6 +77,9 @@ class Paddle():
             self.y = WINDOW_HEIGHT - self.height
 
     def draw(self, screen):
+        # draw power meter
+        self.power_meter.render(screen)
+
         pygame.draw.rect(screen, (255, 255, 255),
                          pygame.Rect(self.x, self.y,
                                      self.width, self.height))

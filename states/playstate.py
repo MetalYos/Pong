@@ -14,6 +14,7 @@ class PlayState(BaseState):
         super().__init__()
         self.serving_player = 1
         self.winner = 1
+        self.ball_prev_speed = 0
 
     def enter(self, enter_params=None):
         self.num_players = enter_params.get('num_players')
@@ -24,6 +25,7 @@ class PlayState(BaseState):
             self.is_demo = False
 
         # Load Fonts
+        load_font('fonts\\font.ttf', 'small_medium', self.cached_fonts, 32)
         load_font('fonts\\font.ttf', 'huge', self.cached_fonts, 128)
 
         # Load Sounds
@@ -68,6 +70,12 @@ class PlayState(BaseState):
                         statemachine.StateMachine.instance().push('game_menu')
                     else:
                         statemachine.StateMachine.instance().set_change('main_menu')
+                if event.key == pygame.K_LCTRL:
+                    if self.player1.ball_hits >= PADDLE_SPECIAL_HIT_THRESHOLD:
+                        self.player1.going_to_hit_special = True
+                if event.key == pygame.K_RCTRL:
+                    if self.num_players == 2 and self.player2.ball_hits >= PADDLE_SPECIAL_HIT_THRESHOLD:
+                        self.player2.going_to_hit_special = True
 
     def update(self, dt):
         if not self.is_demo:
@@ -87,81 +95,16 @@ class PlayState(BaseState):
         # Update ball movement
         self.ball.update(dt)
 
-        # Ball collision with upper bound
-        if self.ball.top() <= 0:
-            self.ball.dy = -self.ball.dy
-            self.ball.set_position(self.ball.get_position()[
-                0], self.ball.radius)
-            self.cached_sounds['wall_hit'].play()
-
-        # Ball collision with lower bound
-        if self.ball.bottom() > WINDOW_HEIGHT:
-            self.ball.dy = -self.ball.dy
-            self.ball.set_position(self.ball.get_position()[
-                0], WINDOW_HEIGHT - self.ball.radius)
-            self.cached_sounds['wall_hit'].play()
+        # Check collisions with bounds
+        self.ball_bounds_collision()
 
         # Ball collision with player1
         if self.ball.collides(self.player1):
-            # Add a hit to player1
-            self.player1.ball_hits += 1
-
-            # Set the ball position
-            self.ball.set_position(
-                self.player1.width + self.ball.radius + 1, self.ball.get_position()[1])
-
-            # Calculate the new speed
-            speed = math.sqrt(self.ball.dx ** 2 + self.ball.dy ** 2)
-            if self.difficulty == 'beginner':
-                speed *= PADDLE_SPEED_INCREASE_BEGINNER
-            elif self.difficulty == 'intermediate':
-                speed *= PADDLE_SPEED_INCREASE_INTERMEDIATE
-            else:
-                speed *= PADDLE_SPEED_INCREASE_EXPERT
-
-            # Calculate new direction
-            direction_y = random.random()
-            if self.ball.get_position()[1] < self.player1.get_position()[1]:
-                direction_y = random.random() * -1.0
-            direction_x = math.sqrt(1 - direction_y ** 2)
-
-            # Calculate the new velocity
-            self.ball.dx = direction_x * speed
-            self.ball.dy = direction_y * speed
-
-            # Play the paddle hit sound
-            self.cached_sounds['paddle_hit'].play()
+            self.ball_paddle_collision(self.player1)
 
         # Ball collision with player2
         if self.ball.collides(self.player2):
-            # Add a hit to player2
-            self.player2.ball_hits += 1
-
-            # Set the ball position
-            self.ball.set_position(
-                WINDOW_WIDTH - self.player2.width - self.ball.radius - 1, self.ball.get_position()[1])
-
-            # Calculate the new speed
-            speed = math.sqrt(self.ball.dx ** 2 + self.ball.dy ** 2)
-            if self.difficulty == 'beginner':
-                speed *= PADDLE_SPEED_INCREASE_BEGINNER
-            elif self.difficulty == 'intermediate':
-                speed *= PADDLE_SPEED_INCREASE_INTERMEDIATE
-            else:
-                speed *= PADDLE_SPEED_INCREASE_EXPERT
-
-            # Calculate new direction
-            direction_y = random.random()
-            if self.ball.get_position()[1] < self.player2.get_position()[1]:
-                direction_y = random.random() * -1.0
-            direction_x = -math.sqrt(1 - direction_y ** 2)
-
-            # Calculate the new velocity
-            self.ball.dx = direction_x * speed
-            self.ball.dy = direction_y * speed
-
-            # Play the paddle hit sound
-            self.cached_sounds['paddle_hit'].play()
+            self.ball_paddle_collision(self.player2)
 
         if not self.is_demo:
             # Player 1 scores
@@ -181,6 +124,27 @@ class PlayState(BaseState):
             self.player1.score), (WINDOW_WIDTH // 4, WINDOW_HEIGHT // 4))
         draw_text(render_screen, self.cached_fonts['huge'], (255, 255, 255), True, str(
             self.player2.score), (WINDOW_WIDTH * 3 // 4, WINDOW_HEIGHT // 4))
+
+        # Draw special hit prompt
+        time = int(pygame.time.get_ticks() / 500)
+        if self.player1.ball_hits == PADDLE_SPECIAL_HIT_THRESHOLD:
+            if not self.player1.going_to_hit_special:
+                if time % 2 == 0:
+                    draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255), True,
+                              'Press Left Ctrl for a special hit!', (WINDOW_WIDTH * 1 // 4, WINDOW_HEIGHT // 10))
+            else:
+                if time % 2 == 0:
+                    draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255), True,
+                              'Hitting special!', (WINDOW_WIDTH * 1 // 4, WINDOW_HEIGHT // 10))
+        if self.num_players == 2 and self.player2.ball_hits == PADDLE_SPECIAL_HIT_THRESHOLD:
+            if not self.player2.going_to_hit_special:
+                if time % 2 == 0:
+                    draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255), True,
+                              'Press Right Ctrl for a special hit!', (WINDOW_WIDTH * 3 // 4, WINDOW_HEIGHT // 10))
+            else:
+                if time % 2 == 0:
+                    draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255), True,
+                              'Hitting special!', (WINDOW_WIDTH * 3 // 4, WINDOW_HEIGHT // 10))
 
         # Draw the ball
         self.ball.draw(render_screen)
@@ -219,6 +183,8 @@ class PlayState(BaseState):
 
     def player_scores(self, player):
         player.score += 1
+        self.player1.reset_ball_hits()
+        self.player2.reset_ball_hits()
 
         if player == self.player1:
             self.serving_player = 2
@@ -236,6 +202,71 @@ class PlayState(BaseState):
                 'player2_score': self.player2.score
             })
         else:
+            pygame.time.delay(500)
             self.ball.reset()
             self.ball.set_initial_speed(self.serving_player == 2)
-            pygame.time.wait(500)
+
+    def ball_bounds_collision(self):
+        # Ball collision with upper bound
+        if self.ball.top() <= 0:
+            self.ball.dy = -self.ball.dy
+            self.ball.set_position(self.ball.get_position()[
+                0], self.ball.radius)
+            self.cached_sounds['wall_hit'].play()
+
+        # Ball collision with lower bound
+        if self.ball.bottom() > WINDOW_HEIGHT:
+            self.ball.dy = -self.ball.dy
+            self.ball.set_position(self.ball.get_position()[
+                0], WINDOW_HEIGHT - self.ball.radius)
+            self.cached_sounds['wall_hit'].play()
+
+    def ball_paddle_collision(self, player):
+        # Add a hit to player
+        if player.ball_hits < PADDLE_SPECIAL_HIT_THRESHOLD:
+            player.add_ball_hit()
+
+        # Set the ball position
+        if player == self.player1:
+            self.ball.set_position(
+                player.width + self.ball.radius + 1, self.ball.get_position()[1])
+        else:
+            self.ball.set_position(
+                WINDOW_WIDTH - player.width - self.ball.radius - 1, self.ball.get_position()[1])
+
+        # Calculate the new speed
+        speed = math.sqrt(self.ball.dx ** 2 + self.ball.dy ** 2)
+        if self.difficulty == 'beginner':
+            speed *= PADDLE_SPEED_INCREASE_BEGINNER
+        if self.difficulty == 'intermediate':
+            speed *= PADDLE_SPEED_INCREASE_INTERMEDIATE
+        if self.difficulty == 'expert':
+            speed *= PADDLE_SPEED_INCREASE_EXPERT
+        if player.going_to_hit_special:
+            self.ball_prev_speed = self.ball.speed()
+            speed *= PADDLE_SPECIAL_HIT_INCREASE
+            player.hit_special = True
+            player.going_to_hit_special = False
+            player.reset_ball_hits()
+
+        opponent = self.player1
+        if player == self.player1:
+            opponent = self.player2
+        if opponent.hit_special:
+            speed = self.ball_prev_speed
+            opponent.hit_special = False
+
+        # Calculate new direction
+        direction_y = min(random.random(), 0.6)
+        if self.ball.get_position()[1] < player.get_position()[1]:
+            direction_y *= -1.0
+        direction_x = math.sqrt(1 - direction_y ** 2)
+        if player == self.player2:
+            direction_x *= -1
+
+        # Calculate the new velocity
+        self.ball.dx = direction_x * speed
+        self.ball.dy = direction_y * speed
+
+        # Play the paddle hit sound
+        self.cached_sounds['paddle_hit'].play()

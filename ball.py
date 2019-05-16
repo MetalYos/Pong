@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 from constants import *
 
 
@@ -17,6 +18,9 @@ class Ball():
 
     def get_position(self):
         return (self.x + self.radius, self.y + self.radius)
+
+    def speed(self):
+        return math.sqrt(self.dx ** 2 + self.dy ** 2)
 
     def left(self):
         return self.x
