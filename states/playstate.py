@@ -32,6 +32,8 @@ class PlayState(BaseState):
         load_sound('sounds\\paddle_hit.wav', 'paddle_hit', self.cached_sounds)
         load_sound('sounds\\score.wav', 'score', self.cached_sounds)
         load_sound('sounds\\wall_hit.wav', 'wall_hit', self.cached_sounds)
+        load_sound('sounds\\paddle_special_hit.wav',
+                   'paddle_special_hit', self.cached_sounds)
 
         # Play music
         play_music(1, self.music)
@@ -248,6 +250,7 @@ class PlayState(BaseState):
             player.hit_special = True
             player.going_to_hit_special = False
             player.reset_ball_hits()
+            self.cached_sounds['paddle_special_hit'].play()
 
         opponent = self.player1
         if player == self.player1:

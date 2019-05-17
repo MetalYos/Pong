@@ -12,9 +12,6 @@ class Paddle():
         self.width = width
         self.height = height
         self.score = 0
-        self.ball_hits = 0
-        self.going_to_hit_special = False
-        self.hit_special = False
 
         self.speed = PADDLE_SPEED
         self.tolerance = 0
@@ -25,6 +22,8 @@ class Paddle():
             self.power_meter.width - WINDOW_WIDTH // 20
         if self.x > WINDOW_WIDTH // 2:
             self.power_meter.x = WINDOW_WIDTH // 2 + WINDOW_WIDTH // 20
+
+        self.reset_ball_hits()
 
     def set_position(self, x, y):
         self.x = x - self.width // 2
@@ -56,6 +55,8 @@ class Paddle():
     def reset_ball_hits(self):
         self.ball_hits = 0
         self.power_meter.percentage = 0
+        self.going_to_hit_special = False
+        self.hit_special = False
 
     def move(self, move_up, dt):
         if move_up:
