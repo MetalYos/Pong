@@ -1,0 +1,49 @@
+# Settings File
+window_width = 1280
+window_height = 720
+fps = 60
+win_score = 10
+
+# Ball settings
+ball_radius = $window_width^ // 160
+ball_initial_max_speed = 600
+ball_initial_min_speed = 400
+
+# Paddle settings
+paddle_width = $window_width^ // 45
+paddle_height = $window_height^ // 7
+paddle_speed = 500
+
+# Net settings
+net_segments = 20
+net_segments_gap = 10
+net_segments_height = ($window_height^ - (($net_segments^ - 1) * $net_segments_gap^)) // $net_segments^
+net_segment_width = $window_width^ // 100
+
+# Paddle AI settings
+paddle_tolerance_beginner = (220, 420)
+paddle_tolerance_Intermediate = (420, 620)
+paddle_tolerance_expert = (820, 1020)
+
+ball_speed_increase_beginner = 1.03
+ball_speed_increase_intermediate = 1.06
+ball_speed_increase_expert = 1.12
+
+paddle_special_hit_threshold = 10
+paddle_special_hit_increase = 1.5
+
+# Ball Particle System settings
+particle_size = 6
+particle_birth_rate = 0.3
+particle_speed = 200
+particle_death_age = 20
+
+# Particle system gradient color settings
+particle_gradient_color_01 = (255, 255, 255)
+particle_gradient_color_02 = (255, 255, 0)
+particle_gradient_color_02_pos = 0.2
+particle_gradient_color_03 = (255, 75, 0)
+particle_gradient_color_03_pos = 0.6
+particle_gradient_color_04 = (255, 0, 0)
+particle_gradient_color_04_pos = 0.8
+particle_gradient_last_color = (25, 25, 25)

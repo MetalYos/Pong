@@ -1,6 +1,6 @@
 import pygame
 import os
-from constants import WINDOW_WIDTH, WINDOW_HEIGHT
+from settings import Settings
 
 
 class PowerMeter():
@@ -19,8 +19,8 @@ class PowerMeter():
             self.img_inner = pygame.image.load(
                 os.path.join('images', 'power_meter_inner_right.png'))
         self.percentage = 0
-        self.width = WINDOW_WIDTH // 6
-        self.height = WINDOW_HEIGHT // 12
+        self.width = Settings.instance().settings['window_width'] // 6
+        self.height = Settings.instance().settings['window_height'] // 12
 
         self.img_inner = pygame.transform.scale(
             self.img_inner, (self.width - 5, self.height - 5))

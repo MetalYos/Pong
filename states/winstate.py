@@ -2,7 +2,7 @@ import pygame
 import statemachine
 from states.basestate import BaseState
 from helpers import load_font, draw_text
-from constants import *
+from settings import Settings
 
 
 class WinState(BaseState):
@@ -10,6 +10,11 @@ class WinState(BaseState):
         super().__init__()
 
     def enter(self, enter_params):
+        # Get needed settings
+        self.window_width = Settings.instance().settings['window_width']
+        self.window_height = Settings.instance().settings['window_height']
+
+        # Save enter parameters
         self.winner = enter_params['winner']
         self.player1_score = enter_params['player1_score']
         self.player2_score = enter_params['player2_score']
@@ -28,12 +33,12 @@ class WinState(BaseState):
     def render(self, render_screen):
         draw_text(render_screen, self.cached_fonts['large'], (255, 255, 255),
                   True, f'Player {self.winner} Won!', (
-            WINDOW_WIDTH // 2, WINDOW_HEIGHT // 5))
+            self.window_width // 2, self.window_height // 5))
         draw_text(render_screen, self.cached_fonts['small'], (255, 255, 255),
-                  True, "Press Enter to go back to the main menu", (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3))
+                  True, "Press Enter to go back to the main menu", (self.window_width // 2, self.window_height // 3))
 
         # print score
         draw_text(render_screen, self.cached_fonts['huge'], (255, 255, 255), True, str(
-            self.player1_score), (WINDOW_WIDTH // 4, WINDOW_HEIGHT // 4))
+            self.player1_score), (self.window_width // 4, self.window_height // 4))
         draw_text(render_screen, self.cached_fonts['huge'], (255, 255, 255), True, str(
-            self.player2_score), (WINDOW_WIDTH * 3 // 4, WINDOW_HEIGHT // 4))
+            self.player2_score), (self.window_width * 3 // 4, self.window_height // 4))

@@ -2,7 +2,7 @@ import pygame
 import statemachine
 from states.basestate import BaseState
 from helpers import load_font, draw_text, play_music
-from constants import WINDOW_WIDTH, WINDOW_HEIGHT, WIN_SCORE
+from settings import Settings
 
 
 class NewGameState(BaseState):
@@ -10,6 +10,12 @@ class NewGameState(BaseState):
         super().__init__()
 
     def enter(self, enter_params=None):
+        # Get needed settings
+        self.window_width = Settings.instance().settings['window_width']
+        self.window_height = Settings.instance().settings['window_height']
+        self.win_score = Settings.instance().settings['win_score']
+
+        # Save enter parameters
         self.num_players = enter_params['num_players']
         self.input_device = enter_params['input_device']
         self.difficulty = enter_params.get('difficulty')
@@ -32,59 +38,59 @@ class NewGameState(BaseState):
                     })
 
     def render(self, render_screen):
-        start_pos = WINDOW_HEIGHT // 5
+        start_pos = self.window_height // 5
         gap = 40
 
         if self.num_players == 1:
             draw_text(render_screen, self.cached_fonts['medium'], (255, 255, 255),
-                      True, "Player 1 instructions", (WINDOW_WIDTH // 2, start_pos))
+                      True, "Player 1 instructions", (self.window_width // 2, start_pos))
             start_pos += gap
             draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255),
-                      True, f"You have chosen to use the {self.input_device}. ", (WINDOW_WIDTH // 2, start_pos))
+                      True, f"You have chosen to use the {self.input_device}. ", (self.window_width // 2, start_pos))
             start_pos += gap
             draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255),
-                      True, f"You have selected {self.difficulty} difficulty. ", (WINDOW_WIDTH // 2, start_pos))
+                      True, f"You have selected {self.difficulty} difficulty. ", (self.window_width // 2, start_pos))
 
             if self.input_device == 'mouse':
                 start_pos += gap * 2
                 draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255),
-                          True, "Control the paddle on the left hand side of the screen", (WINDOW_WIDTH // 8, start_pos), 'left')
+                          True, "Control the paddle on the left hand side of the screen", (self.window_width // 8, start_pos), 'left')
                 start_pos += gap
                 draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255),
-                          True, "using your mouse. the paddle can be moved up or down.", (WINDOW_WIDTH // 8, start_pos), 'left')
+                          True, "using your mouse. the paddle can be moved up or down.", (self.window_width // 8, start_pos), 'left')
 
             if self.input_device == 'keyboard':
                 draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255),
-                          True, "Control the paddle on the left hand side of the screen", (WINDOW_WIDTH // 8, start_pos), 'left')
+                          True, "Control the paddle on the left hand side of the screen", (self.window_width // 8, start_pos), 'left')
                 start_pos += gap
                 draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255),
-                          True, 'using your keyboard. use "W" to move the paddle up', (WINDOW_WIDTH // 8, start_pos), 'left')
+                          True, 'using your keyboard. use "W" to move the paddle up', (self.window_width // 8, start_pos), 'left')
                 start_pos += gap
                 draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255),
-                          True, 'and "S" to move the paddle down.', (WINDOW_WIDTH // 8, start_pos), 'left')
+                          True, 'and "S" to move the paddle down.', (self.window_width // 8, start_pos), 'left')
         else:
             draw_text(render_screen, self.cached_fonts['medium'], (255, 255, 255),
-                      True, "Two players instructions", (WINDOW_WIDTH // 2, start_pos))
+                      True, "Two players instructions", (self.window_width // 2, start_pos))
             start_pos += gap * 2
             draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255),
-                      True, 'Player 1 controls the left hand paddle using the', (WINDOW_WIDTH // 8, start_pos), 'left')
+                      True, 'Player 1 controls the left hand paddle using the', (self.window_width // 8, start_pos), 'left')
             start_pos += gap
             draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255),
-                      True, '"W" (up) and "Z" (down) keys.', (WINDOW_WIDTH // 8, start_pos), 'left')
+                      True, '"W" (up) and "Z" (down) keys.', (self.window_width // 8, start_pos), 'left')
             start_pos += gap * 2
             draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255),
-                      True, 'Player 2 controls the right hand paddle using the', (WINDOW_WIDTH // 8, start_pos), 'left')
+                      True, 'Player 2 controls the right hand paddle using the', (self.window_width // 8, start_pos), 'left')
             start_pos += gap
             draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255),
-                      True, 'up arrow and down arrow keys.', (WINDOW_WIDTH // 8, start_pos), 'left')
+                      True, 'up arrow and down arrow keys.', (self.window_width // 8, start_pos), 'left')
 
         start_pos += gap * 2
         draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255),
-                  True, "Points are scored when your opponent misses the ball.", (WINDOW_WIDTH // 8, start_pos), 'left')
+                  True, "Points are scored when your opponent misses the ball.", (self.window_width // 8, start_pos), 'left')
         start_pos += gap
         draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255),
-                  True, f"First player to reach {WIN_SCORE} points wins the game.", (WINDOW_WIDTH // 8, start_pos), 'left')
+                  True, f"First player to reach {self.win_score} points wins the game.", (self.window_width // 8, start_pos), 'left')
 
-        start_pos = WINDOW_HEIGHT - gap * 2
+        start_pos = self.window_height - gap * 2
         draw_text(render_screen, self.cached_fonts['medium'], (255, 255, 255),
-                  True, "Press Spacebar to Play!", (WINDOW_WIDTH // 2, start_pos))
+                  True, "Press Spacebar to Play!", (self.window_width // 2, start_pos))

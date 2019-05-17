@@ -2,7 +2,7 @@ import pygame
 import random
 import math
 import statemachine
-from constants import *
+from settings import Settings
 from states.basestate import BaseState
 from helpers import load_sound, load_font, draw_text, play_music
 from paddle import Paddle
@@ -19,6 +19,37 @@ class PlayState(BaseState):
         self.ball_prev_speed = 0
 
     def enter(self, enter_params=None):
+        # Get needed settings
+        self.window_width = Settings.instance().settings['window_width']
+        self.window_height = Settings.instance().settings['window_height']
+        self.paddle_width = Settings.instance().settings['paddle_width']
+        self.paddle_height = Settings.instance().settings['paddle_height']
+        self.paddle_tolerance_beginner = Settings.instance(
+        ).settings['paddle_tolerance_beginner']
+        self.paddle_tolerance_Intermediate = Settings.instance(
+        ).settings['paddle_tolerance_Intermediate']
+        self.paddle_tolerance_expert = Settings.instance(
+        ).settings['paddle_tolerance_expert']
+        self.ball_speed_increase_beginner = Settings.instance(
+        ).settings['ball_speed_increase_beginner']
+        self.ball_speed_increase_intermediate = Settings.instance(
+        ).settings['ball_speed_increase_intermediate']
+        self.ball_speed_increase_expert = Settings.instance(
+        ).settings['ball_speed_increase_expert']
+        self.paddle_special_hit_threshold = Settings.instance(
+        ).settings['paddle_special_hit_threshold']
+        self.paddle_special_hit_increase = Settings.instance(
+        ).settings['paddle_special_hit_increase']
+        self.net_segments = Settings.instance().settings['net_segments']
+        self.net_segments_gap = Settings.instance(
+        ).settings['net_segments_gap']
+        self.net_segments_height = Settings.instance(
+        ).settings['net_segments_height']
+        self.net_segment_width = Settings.instance(
+        ).settings['net_segment_width']
+        self.win_score = Settings.instance().settings['win_score']
+
+        # Save enter parameters
         self.num_players = enter_params.get('num_players')
         self.input_device = enter_params.get('input_device')
         self.difficulty = enter_params.get('difficulty')
@@ -41,36 +72,45 @@ class PlayState(BaseState):
         play_music(1, self.music)
 
         # Create Entites
-        self.ball = Ball(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2, BALL_RADIUS)
+        self.ball = Ball(self.window_width // 2,
+                         self.window_height // 2, Settings.instance().settings['ball_radius'])
         self.player1 = Paddle(
-            PADDLE_WIDTH // 2, PADDLE_HEIGHT // 2 + 100, PADDLE_WIDTH, PADDLE_HEIGHT)
-        self.player2 = Paddle(WINDOW_WIDTH - PADDLE_WIDTH // 2, WINDOW_HEIGHT -
-                              PADDLE_HEIGHT // 2 - 100, PADDLE_WIDTH, PADDLE_HEIGHT)
+            self.paddle_width // 2, self.paddle_height // 2 + 100, self.paddle_width, self.paddle_height)
+        self.player2 = Paddle(self.window_width - self.paddle_width // 2, self.window_height -
+                              self.paddle_height // 2 - 100, self.paddle_width, self.paddle_height)
 
         self.ball.set_initial_speed(self.serving_player == 2)
 
         # Set tolerance according to difficulty
         tolerance = random.randint(
-            PADDLE_TOLERANCE_BEGINNER[0], PADDLE_TOLERANCE_BEGINNER[1]) / 100
-        self.speed_increase = PADDLE_SPEED_INCREASE_BEGINNER
+            self.paddle_tolerance_beginner[0], self.paddle_tolerance_beginner[1]) / 100
+        self.speed_increase = self.ball_speed_increase_beginner
         if self.difficulty == 'intermediate':
             tolerance = random.randint(
-                PADDLE_TOLERANCE_INTERMEDIATE[0], PADDLE_TOLERANCE_INTERMEDIATE[1]) / 100
-            self.speed_increase = PADDLE_SPEED_INCREASE_INTERMEDIATE
+                self.paddle_tolerance_Intermediate[0], self.paddle_tolerance_Intermediate[1]) / 100
+            self.speed_increase = self.ball_speed_increase_intermediate
         if self.difficulty == 'expert':
             tolerance = random.randint(
-                PADDLE_TOLERANCE_EXPERT[0], PADDLE_TOLERANCE_EXPERT[1]) / 100
-            self.speed_increase = PADDLE_SPEED_INCREASE_EXPERT
+                self.paddle_tolerance_expert[0], self.paddle_tolerance_expert[1]) / 100
+            self.speed_increase = self.ball_speed_increase_expert
         self.player2.set_tolerance(tolerance)
 
         # Load particle system
         self.particle_system = ParticleSystem(
-            WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2, ParticleShape.SQUARE,
-            size=8, birth_rate=0.3, speed=200, death_age=20)
-        gradient = Gradient(((255, 255, 255), 0.0), ((25, 25, 25), 1.0))
-        gradient.add_color((255, 255, 0), 0.2)
-        gradient.add_color((255, 75, 0), 0.6)
-        gradient.add_color((255, 0, 0), 0.8)
+            self.ball.get_position()[0], self.ball.get_position()[
+                1], ParticleShape.SQUARE,
+            Settings.instance().settings['particle_size'],
+            Settings.instance().settings['particle_birth_rate'],
+            Settings.instance().settings['particle_speed'],
+            Settings.instance().settings['particle_death_age'])
+        gradient = Gradient(Settings.instance().settings['particle_gradient_color_01'],
+                            Settings.instance().settings['particle_gradient_last_color'])
+        gradient.add_color(Settings.instance().settings['particle_gradient_color_02'],
+                           Settings.instance().settings['particle_gradient_color_02_pos'])
+        gradient.add_color(Settings.instance().settings['particle_gradient_color_03'],
+                           Settings.instance().settings['particle_gradient_color_03_pos'])
+        gradient.add_color(Settings.instance().settings['particle_gradient_color_04'],
+                           Settings.instance().settings['particle_gradient_color_04_pos'])
         self.particle_system.set_gradient(gradient)
 
     def exit(self):
@@ -85,10 +125,10 @@ class PlayState(BaseState):
                     else:
                         statemachine.StateMachine.instance().set_change('main_menu')
                 if event.key == pygame.K_LCTRL:
-                    if self.player1.ball_hits >= PADDLE_SPECIAL_HIT_THRESHOLD:
+                    if self.player1.ball_hits >= self.paddle_special_hit_threshold:
                         self.player1.going_to_hit_special = True
                 if event.key == pygame.K_RCTRL:
-                    if self.num_players == 2 and self.player2.ball_hits >= PADDLE_SPECIAL_HIT_THRESHOLD:
+                    if self.num_players == 2 and self.player2.ball_hits >= self.paddle_special_hit_threshold:
                         self.player2.going_to_hit_special = True
 
     def update(self, dt):
@@ -125,7 +165,7 @@ class PlayState(BaseState):
 
         if not self.is_demo:
             # Player 1 scores
-            if self.ball.left() > WINDOW_WIDTH:
+            if self.ball.left() > self.window_width:
                 self.player_scores(self.player1)
 
             # Player 2 scores
@@ -138,30 +178,30 @@ class PlayState(BaseState):
 
         # draw the score
         draw_text(render_screen, self.cached_fonts['huge'], (255, 255, 255), True, str(
-            self.player1.score), (WINDOW_WIDTH // 4, WINDOW_HEIGHT // 4))
+            self.player1.score), (self.window_width // 4, self.window_height // 4))
         draw_text(render_screen, self.cached_fonts['huge'], (255, 255, 255), True, str(
-            self.player2.score), (WINDOW_WIDTH * 3 // 4, WINDOW_HEIGHT // 4))
+            self.player2.score), (self.window_width * 3 // 4, self.window_height // 4))
 
         # Draw special hit prompt
         time = int(pygame.time.get_ticks() / 500)
-        if self.player1.ball_hits == PADDLE_SPECIAL_HIT_THRESHOLD:
+        if self.player1.ball_hits == self.paddle_special_hit_threshold:
             if not self.player1.going_to_hit_special:
                 if time % 2 == 0:
                     draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255), True,
-                              'Press Left Ctrl for a special hit!', (WINDOW_WIDTH * 1 // 4, WINDOW_HEIGHT // 10))
+                              'Press Left Ctrl for a special hit!', (self.window_width * 1 // 4, self.window_height // 10))
             else:
                 if time % 2 == 0:
                     draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255), True,
-                              'Hitting special!', (WINDOW_WIDTH * 1 // 4, WINDOW_HEIGHT // 10))
-        if self.num_players == 2 and self.player2.ball_hits == PADDLE_SPECIAL_HIT_THRESHOLD:
+                              'Hitting special!', (self.window_width * 1 // 4, self.window_height // 10))
+        if self.num_players == 2 and self.player2.ball_hits == self.paddle_special_hit_threshold:
             if not self.player2.going_to_hit_special:
                 if time % 2 == 0:
                     draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255), True,
-                              'Press Right Ctrl for a special hit!', (WINDOW_WIDTH * 3 // 4, WINDOW_HEIGHT // 10))
+                              'Press Right Ctrl for a special hit!', (self.window_width * 3 // 4, self.window_height // 10))
             else:
                 if time % 2 == 0:
                     draw_text(render_screen, self.cached_fonts['small_medium'], (255, 255, 255), True,
-                              'Hitting special!', (WINDOW_WIDTH * 3 // 4, WINDOW_HEIGHT // 10))
+                              'Hitting special!', (self.window_width * 3 // 4, self.window_height // 10))
 
         # Draw the ball
         self.ball.draw(render_screen)
@@ -172,16 +212,16 @@ class PlayState(BaseState):
         self.particle_system.render(render_screen)
 
     def draw_net(self, render_screen):
-        start_pos = (WINDOW_WIDTH // 2, 0)
-        end_pos = (start_pos[0], start_pos[1] + NET_SEGMENT_HEIGHT)
+        start_pos = (self.window_width // 2, 0)
+        end_pos = (start_pos[0], start_pos[1] + self.net_segments_height)
         pygame.draw.line(render_screen, (255, 255, 255),
-                         start_pos, end_pos, NET_SEGMENT_WIDTH)
+                         start_pos, end_pos, self.net_segment_width)
 
-        for _ in range(1, NET_SEGMENTS):
-            start_pos = (end_pos[0], end_pos[1] + NET_SEGMENTS_GAP)
-            end_pos = (start_pos[0], start_pos[1] + NET_SEGMENT_HEIGHT)
+        for _ in range(1, self.net_segments):
+            start_pos = (end_pos[0], end_pos[1] + self.net_segments_gap)
+            end_pos = (start_pos[0], start_pos[1] + self.net_segments_height)
             pygame.draw.line(render_screen, (255, 255, 255),
-                             start_pos, end_pos, NET_SEGMENT_WIDTH)
+                             start_pos, end_pos, self.net_segment_width)
 
     def on_keypress(self, dt):
         pressed = pygame.key.get_pressed()
@@ -210,7 +250,7 @@ class PlayState(BaseState):
         else:
             self.serving_player = 1
         self.cached_sounds['score'].play()
-        if player.score == WIN_SCORE:
+        if player.score == self.win_score:
             if player == self.player1:
                 self.winner = 1
             else:
@@ -221,7 +261,7 @@ class PlayState(BaseState):
                 'player2_score': self.player2.score
             })
         else:
-            pygame.time.delay(500)
+            pygame.time.delay(200)
             self.ball.reset()
             self.ball.set_initial_speed(self.serving_player == 2)
 
@@ -234,15 +274,15 @@ class PlayState(BaseState):
             self.cached_sounds['wall_hit'].play()
 
         # Ball collision with lower bound
-        if self.ball.bottom() > WINDOW_HEIGHT:
+        if self.ball.bottom() > self.window_height:
             self.ball.dy = -self.ball.dy
             self.ball.set_position(self.ball.get_position()[
-                0], WINDOW_HEIGHT - self.ball.radius)
+                0], self.window_height - self.ball.radius)
             self.cached_sounds['wall_hit'].play()
 
     def ball_paddle_collision(self, player):
         # Add a hit to player
-        if player.ball_hits < PADDLE_SPECIAL_HIT_THRESHOLD:
+        if player.ball_hits < self.paddle_special_hit_threshold:
             player.add_ball_hit()
 
         # Set the ball position
@@ -251,19 +291,19 @@ class PlayState(BaseState):
                 player.width + self.ball.radius + 1, self.ball.get_position()[1])
         else:
             self.ball.set_position(
-                WINDOW_WIDTH - player.width - self.ball.radius - 1, self.ball.get_position()[1])
+                self.window_width - player.width - self.ball.radius - 1, self.ball.get_position()[1])
 
         # Calculate the new speed
         speed = math.sqrt(self.ball.dx ** 2 + self.ball.dy ** 2)
         if self.difficulty == 'beginner':
-            speed *= PADDLE_SPEED_INCREASE_BEGINNER
+            speed *= self.ball_speed_increase_beginner
         if self.difficulty == 'intermediate':
-            speed *= PADDLE_SPEED_INCREASE_INTERMEDIATE
+            speed *= self.ball_speed_increase_intermediate
         if self.difficulty == 'expert':
-            speed *= PADDLE_SPEED_INCREASE_EXPERT
+            speed *= self.ball_speed_increase_expert
         if player.going_to_hit_special:
             self.ball_prev_speed = self.ball.speed()
-            speed *= PADDLE_SPECIAL_HIT_INCREASE
+            speed *= self.paddle_special_hit_increase
             player.hit_special = True
             player.going_to_hit_special = False
             player.reset_ball_hits()

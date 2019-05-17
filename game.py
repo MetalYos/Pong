@@ -1,16 +1,20 @@
 import pygame
 import random
 from statemachine import StateMachine
-from constants import *
+from settings import Settings
 
 
 class Game():
     def __init__(self):
+        Settings.instance().load('settings.txt')
+
         pygame.init()
         random.seed()
         self.render_screen = pygame.display.set_mode(
-            (WINDOW_WIDTH, WINDOW_HEIGHT))
+            (Settings.instance().settings['window_width'], Settings.instance().settings['window_height']))
         pygame.display.set_caption("Pong")
+
+        self.fps = Settings.instance().settings['fps']
 
         self.clock = pygame.time.Clock()
         self.dt = 0
@@ -49,7 +53,7 @@ class Game():
         StateMachine.instance().render(self.render_screen)
 
         pygame.display.flip()
-        self.dt = self.clock.tick(FPS) / 1000
+        self.dt = self.clock.tick(self.fps) / 1000
 
     def quit(self):
         pass

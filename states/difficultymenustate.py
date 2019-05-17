@@ -1,6 +1,6 @@
 import statemachine
 from states.mainmenustate import MainMenuState, MenuItem, color_normal, color_hover
-from constants import WINDOW_WIDTH, WINDOW_HEIGHT
+from settings import Settings
 from helpers import load_font, draw_text, load_sound
 
 
@@ -9,6 +9,11 @@ class DifficultyMenuState(MainMenuState):
         super().__init__()
 
     def enter(self, enter_parmas):
+        # Get needed settings
+        self.window_width = Settings.instance().settings['window_width']
+        self.window_height = Settings.instance().settings['window_height']
+
+        # Save enter parameters
         self.num_players = enter_parmas['num_players']
         self.input_device = enter_parmas['input_device']
 
@@ -21,14 +26,14 @@ class DifficultyMenuState(MainMenuState):
                    'enter_menu_item', self.cached_sounds)
 
         self.menu_items = {
-            'beginner': MenuItem((WINDOW_WIDTH * 2 // 5, WINDOW_HEIGHT * 3 // 8), '>> Beginner', self.cached_fonts['medium']),
-            'intermediate': MenuItem((WINDOW_WIDTH * 2 // 5, WINDOW_HEIGHT * 4 // 8), '>> Intermediate', self.cached_fonts['medium']),
-            'expert': MenuItem((WINDOW_WIDTH * 2 // 5, WINDOW_HEIGHT * 5 // 8), '>> Expert', self.cached_fonts['medium'])
+            'beginner': MenuItem((self.window_width * 2 // 5, self.window_height * 3 // 8), '>> Beginner', self.cached_fonts['medium']),
+            'intermediate': MenuItem((self.window_width * 2 // 5, self.window_height * 4 // 8), '>> Intermediate', self.cached_fonts['medium']),
+            'expert': MenuItem((self.window_width * 2 // 5, self.window_height * 5 // 8), '>> Expert', self.cached_fonts['medium'])
         }
 
     def render(self, render_screen):
         draw_text(render_screen, self.cached_fonts['large'], color_normal, True, "Choose your difficulty level:", (
-            WINDOW_WIDTH // 2, WINDOW_HEIGHT // 8))
+            self.window_width // 2, self.window_height // 8))
         for _, value in self.menu_items.items():
             value.render(render_screen)
 

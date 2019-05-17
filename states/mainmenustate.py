@@ -2,7 +2,7 @@ import pygame
 import statemachine
 from states.basestate import BaseState
 from helpers import load_font, draw_text, play_music, load_sound
-from constants import WINDOW_WIDTH, WINDOW_HEIGHT
+from settings import Settings
 
 color_normal = (255, 255, 255)
 color_hover = (255, 255, 0)
@@ -41,6 +41,10 @@ class MainMenuState(BaseState):
         self.menu_items = {}
 
     def enter(self, enter_params=None):
+        # Get needed settings
+        self.window_width = Settings.instance().settings['window_width']
+        self.window_height = Settings.instance().settings['window_height']
+
         # Load fonts
         load_font('fonts\\font.ttf', 'medium', self.cached_fonts, 48)
         load_font('fonts\\font.ttf', 'title', self.cached_fonts, 256)
@@ -52,10 +56,10 @@ class MainMenuState(BaseState):
         play_music(0, self.music)
 
         self.menu_items = {
-            '1_player': MenuItem((WINDOW_WIDTH * 2 // 5, WINDOW_HEIGHT * 4 // 8), '>> 1 Player', self.cached_fonts['medium']),
-            '2_players': MenuItem((WINDOW_WIDTH * 2 // 5, WINDOW_HEIGHT * 5 // 8), '>> 2 Players', self.cached_fonts['medium']),
-            'demo': MenuItem((WINDOW_WIDTH * 2 // 5, WINDOW_HEIGHT * 6 // 8), '>> Demo', self.cached_fonts['medium']),
-            'exit': MenuItem((WINDOW_WIDTH * 2 // 5, WINDOW_HEIGHT * 7 // 8), '>> Exit', self.cached_fonts['medium'])
+            '1_player': MenuItem((self.window_width * 2 // 5, self.window_height * 4 // 8), '>> 1 Player', self.cached_fonts['medium']),
+            '2_players': MenuItem((self.window_width * 2 // 5, self.window_height * 5 // 8), '>> 2 Players', self.cached_fonts['medium']),
+            'demo': MenuItem((self.window_width * 2 // 5, self.window_height * 6 // 8), '>> Demo', self.cached_fonts['medium']),
+            'exit': MenuItem((self.window_width * 2 // 5, self.window_height * 7 // 8), '>> Exit', self.cached_fonts['medium'])
         }
 
     def handle_events(self, events):
@@ -68,7 +72,7 @@ class MainMenuState(BaseState):
 
     def render(self, render_screen):
         draw_text(render_screen, self.cached_fonts['title'], color_normal, True, "PONG", (
-            WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4))
+            self.window_width // 2, self.window_height // 4))
         for _, value in self.menu_items.items():
             value.render(render_screen)
 

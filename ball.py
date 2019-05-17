@@ -1,7 +1,7 @@
 import pygame
 import random
 import math
-from constants import *
+from settings import Settings
 
 
 class Ball():
@@ -49,10 +49,16 @@ class Ball():
         self.dy = 0
 
     def set_initial_speed(self, is_left=False):
-        self.dx = random.randint(BALL_INITIAL_MIN_SPEED,
-                                 BALL_INITIAL_MAX_SPEED)
-        self.dy = random.randint(-BALL_INITIAL_MAX_SPEED,
-                                 BALL_INITIAL_MAX_SPEED)
+        # Get needed settings
+        self.ball_initial_min_speed = Settings.instance(
+        ).settings['ball_initial_min_speed']
+        self.ball_initial_max_speed = Settings.instance(
+        ).settings['ball_initial_max_speed']
+
+        self.dx = random.randint(self.ball_initial_min_speed,
+                                 self.ball_initial_max_speed)
+        self.dy = random.randint(-self.ball_initial_min_speed,
+                                 self.ball_initial_max_speed)
 
         if is_left:
             self.dx = -self.dx

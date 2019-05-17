@@ -2,7 +2,7 @@
 
 class Gradient():
     def __init__(self, first_color, last_color):
-        self.gradient = [first_color, last_color]
+        self.gradient = [(first_color, 0.0), (last_color, 1.0)]
         self.__epsilon = 0.00001
 
     def add_color(self, color, position):
