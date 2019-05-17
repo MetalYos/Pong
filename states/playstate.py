@@ -7,6 +7,8 @@ from states.basestate import BaseState
 from helpers import load_sound, load_font, draw_text, play_music
 from paddle import Paddle
 from ball import Ball
+from particlesystem import ParticleShape, ParticleSystem
+from gradient import Gradient
 
 
 class PlayState(BaseState):
@@ -61,6 +63,16 @@ class PlayState(BaseState):
             self.speed_increase = PADDLE_SPEED_INCREASE_EXPERT
         self.player2.set_tolerance(tolerance)
 
+        # Load particle system
+        self.particle_system = ParticleSystem(
+            WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2, ParticleShape.SQUARE,
+            size=8, birth_rate=0.3, speed=200, death_age=20)
+        gradient = Gradient(((255, 255, 255), 0.0), ((25, 25, 25), 1.0))
+        gradient.add_color((255, 255, 0), 0.2)
+        gradient.add_color((255, 75, 0), 0.6)
+        gradient.add_color((255, 0, 0), 0.8)
+        self.particle_system.set_gradient(gradient)
+
     def exit(self):
         pass
 
@@ -108,6 +120,9 @@ class PlayState(BaseState):
         if self.ball.collides(self.player2):
             self.ball_paddle_collision(self.player2)
 
+        self.particle_system.update(dt)
+        self.particle_system.set_position(self.ball.get_position())
+
         if not self.is_demo:
             # Player 1 scores
             if self.ball.left() > WINDOW_WIDTH:
@@ -153,6 +168,8 @@ class PlayState(BaseState):
         # Draw the paddles
         self.player1.draw(render_screen)
         self.player2.draw(render_screen)
+
+        self.particle_system.render(render_screen)
 
     def draw_net(self, render_screen):
         start_pos = (WINDOW_WIDTH // 2, 0)
