@@ -35,8 +35,10 @@ paddle_special_hit_increase = 1.5
 # Ball Particle System settings
 particle_size = 6
 particle_birth_rate = 0.3
-particle_speed = 200
-particle_death_age = 20
+particle_speed = 150
+particle_death_age = 60
+particle_death_variant = 0.5
+particle_speed_variant = 0.5
 
 # Particle system gradient color settings
 particle_gradient_color_01 = (255, 255, 255)

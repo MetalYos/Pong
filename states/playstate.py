@@ -112,6 +112,10 @@ class PlayState(BaseState):
         gradient.add_color(Settings.instance().settings['particle_gradient_color_04'],
                            Settings.instance().settings['particle_gradient_color_04_pos'])
         self.particle_system.set_gradient(gradient)
+        self.particle_system.set_death_variance(
+            Settings.instance().settings['particle_death_variant'])
+        self.particle_system.set_speed_variance(
+            Settings.instance().settings['particle_speed_variant'])
 
     def exit(self):
         pass

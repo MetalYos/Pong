@@ -50,6 +50,8 @@ class ParticleSystem():
         self.y = y
         self.speed = speed
         self.death_age = death_age
+        self.death_variance = 0.0
+        self.speed_variance = 0.0
 
         self.particles = []
         self.frame_count = 0
@@ -65,6 +67,12 @@ class ParticleSystem():
         self.gradient = gradient
         self.color = None
 
+    def set_death_variance(self, variance):
+        self.death_variance = variance
+
+    def set_speed_variance(self, variance):
+        self.speed_variance = variance
+
     def birth_particle(self):
         particle = Particle(self.shape, self.size)
         particle.set_position(self.x, self.y)
@@ -75,13 +83,16 @@ class ParticleSystem():
         length = math.sqrt(dx ** 2 + dy ** 2)
         dx /= length
         dy /= length
-        particle.set_velocity(dx * self.speed, dy * self.speed)
+        speed = random.uniform(
+            1.0 - self.speed_variance, 1.0) * self.speed
+        particle.set_velocity(dx * speed, dy * speed)
 
         self.particles.append(particle)
 
     def update(self, dt):
         self.frame_count += 1
 
+        # Birth particles according to birth rate
         if self.birth_rate > 1:
             if self.frame_count % self.birth_rate == 0:
                 self.birth_particle()
@@ -94,7 +105,9 @@ class ParticleSystem():
             particle.update(dt)
 
             # Kill particals who are older than death_age
-            if particle.age > self.death_age:
+            variant_death_age = random.uniform(
+                1.0 - self.death_variance, 1.0) * self.death_age
+            if particle.age > variant_death_age:
                 self.particles.remove(particle)
 
     def render(self, render_screen):
