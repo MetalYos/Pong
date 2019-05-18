@@ -96,16 +96,16 @@ class MainMenuState(BaseState):
 
     def menu_item_callback(self, name):
         if name == '1_player':
-            statemachine.StateMachine.instance().set_change('input_device_menu', {
+            statemachine.StateMachine.instance().push('input_device_menu', {
                 'num_players': 1
             })
         elif name == '2_players':
-            statemachine.StateMachine.instance().set_change('new_game', {
+            statemachine.StateMachine.instance().push('new_game', {
                 'num_players': 2,
                 'input_device': 'keyboard'
             })
         elif name == 'demo':
-            statemachine.StateMachine.instance().set_change('play', {
+            statemachine.StateMachine.instance().push('play', {
                 'is_demo': True
             })
         elif name == 'exit':

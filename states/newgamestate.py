@@ -1,11 +1,11 @@
 import pygame
 import statemachine
-from states.basestate import BaseState
-from helpers import load_font, draw_text, play_music
+from states.mainmenustate import MainMenuState, MenuItem
+from helpers import load_font, draw_text, play_music, load_sound
 from settings import Settings
 
 
-class NewGameState(BaseState):
+class NewGameState(MainMenuState):
     def __init__(self):
         super().__init__()
 
@@ -23,11 +23,16 @@ class NewGameState(BaseState):
         # Load font
         load_font('fonts\\font.ttf', 'small_medium', self.cached_fonts, 32)
         load_font('fonts\\font.ttf', 'medium', self.cached_fonts, 48)
+        load_sound('sounds\\enter_menu_item.wav',
+                   'enter_menu_item', self.cached_sounds)
 
-        # Play music
-        play_music(0, self.music)
+        self.menu_items = {
+            'back': MenuItem((self.window_width // 20, self.window_height * 14 // 15), '< Back', self.cached_fonts['medium'])
+        }
 
     def handle_events(self, events):
+        super().handle_events(events)
+
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
@@ -94,3 +99,10 @@ class NewGameState(BaseState):
         start_pos = self.window_height - gap * 2
         draw_text(render_screen, self.cached_fonts['medium'], (255, 255, 255),
                   True, "Press Spacebar to Play!", (self.window_width // 2, start_pos))
+
+        for _, value in self.menu_items.items():
+            value.render(render_screen)
+
+    def menu_item_callback(self, name):
+        if name == 'back':
+            statemachine.StateMachine.instance().pop()

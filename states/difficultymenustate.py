@@ -28,7 +28,8 @@ class DifficultyMenuState(MainMenuState):
         self.menu_items = {
             'beginner': MenuItem((self.window_width * 2 // 5, self.window_height * 3 // 8), '>> Beginner', self.cached_fonts['medium']),
             'intermediate': MenuItem((self.window_width * 2 // 5, self.window_height * 4 // 8), '>> Intermediate', self.cached_fonts['medium']),
-            'expert': MenuItem((self.window_width * 2 // 5, self.window_height * 5 // 8), '>> Expert', self.cached_fonts['medium'])
+            'expert': MenuItem((self.window_width * 2 // 5, self.window_height * 5 // 8), '>> Expert', self.cached_fonts['medium']),
+            'back': MenuItem((self.window_width // 20, self.window_height * 14 // 15), '< Back', self.cached_fonts['medium']),
         }
 
     def render(self, render_screen):
@@ -38,8 +39,11 @@ class DifficultyMenuState(MainMenuState):
             value.render(render_screen)
 
     def menu_item_callback(self, name):
-        statemachine.StateMachine.instance().set_change('new_game', {
-            'num_players': self.num_players,
-            'input_device': self.input_device,
-            'difficulty': name
-        })
+        if name == 'back':
+            statemachine.StateMachine.instance().pop()
+        else:
+            statemachine.StateMachine.instance().push('new_game', {
+                'num_players': self.num_players,
+                'input_device': self.input_device,
+                'difficulty': name
+            })
